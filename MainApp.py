@@ -1,13 +1,13 @@
-#Well that's alot of imports
+#Imports that the team built
 from Food import Food
 from User import User
 from DBHandler import DBHandler
 from MainAppScreen import KV #file for screen display
 
+#Imports from the kivy library
 from kivy.uix.screenmanager import (ScreenManager, Screen, NoTransition,
 SlideTransition, CardTransition, SwapTransition,
 FadeTransition, WipeTransition, FallOutTransition, RiseInTransition) 
-
 from kivy.uix import anchorlayout
 from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.picker import MDDatePicker
@@ -30,43 +30,33 @@ from kivy.uix.screenmanager import Screen,ScreenManager
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty, ListProperty, ObjectProperty
+#End imports from kivy library
+#idk why this is saying it's an error, it runs fine with it there
+
 
 #Window size restrictions
 Window.size = (400, 650)
 
-#User declaration
-#user = User("PeterParker","spidyman@gmail.com","password")
-
-
 #SCREEN DEFINITIONS
-class Registration(Screen):
+class Registration(Screen): # Registration Window
     pass
 
-class Login(Screen):
+class Login(Screen): # Login Window
     pass
 
-class Recipes(Screen):
+class Recipes(Screen): # Recipe Window
     pass
 
-class Pantry(Screen):
+class Pantry(Screen): # Pantry Window
     pass
 
 class Window1(Screen): # WELCOME WINDOW
-    test = ObjectProperty()
-    
-    def on_pre_enter(self):
-        # print(self.test)
-        pass
-
-    def on_enter(self):
-        # print(self.test)
-        pass
+    pass
 
 
 class Window2(Screen): #Main List Window -- CHANGE NAME LATER
     #class variable definitions
     data = {
-        'emoticon-angry': "WILL, I'LL END YOUR BLOODLINE",
         'database-plus': 'Add all checked to Pantry',
         'delete': 'Delete all checked',
         'plus':'Add item to list',
@@ -100,7 +90,7 @@ class Window2(Screen): #Main List Window -- CHANGE NAME LATER
             "Sour patch kids"
         ]
     def on_enter(self):
-        icons_item = { #This needs extra items at the bottom to fill out the nav bar
+        icons_item = { #This needs extra items at the bottom to fill out the nav bar - mid priority bug to be fixed later
             "food-apple": "Food",
             "pasta": "Recipes",
             "database": "Pantry",
@@ -113,8 +103,7 @@ class Window2(Screen): #Main List Window -- CHANGE NAME LATER
             "d":"",
         }
 
-
-        if self.alreadyCheckNav == False:
+        if self.alreadyCheckNav == False: #If the navbar is already full, don't fill it again
             for icon_name in icons_item.keys():
                 self.ids.content_drawer.add_widget(
                     ItemDrawer(icon=icon_name, text=icons_item[icon_name])
@@ -128,28 +117,29 @@ class Window2(Screen): #Main List Window -- CHANGE NAME LATER
                 )
             self.alreadyCheck = True
 
-    def remove_item(self,instance):
+    def remove_item(self,instance): #callback function to remove widgets, used for deleting items from the list
         self.ids.container.remove_widget(instance)
 
     def JSON_maker(self,food,date,quant):
+        #debug
         print(food)  #returns the food name, will need to change the variable name of this
-        
+        #debug
         print("date in JSON maker: " + str(date))
         
         if date != None:
-            print(date)
+            print(date) #debug
 
-        if date != None:
+        if date != None: #if the date is not empty then set the expires boolean to true
             exp_bool = 1
         else:
-            exp_bool = 0
+            exp_bool = 0 #otherwise set it to false
 
-        if date != None:
+        if date != None: #2 different queries have to be called based on whether a date was given or not
             App.db.exec(f"INSERT INTO Food(owner,name,expired,exp_date) VALUES('{App.user.username}', '{food}', '{exp_bool}', '{date}')")
         else:
             App.db.exec(f"INSERT INTO Food(owner,name,expired) VALUES('{App.user.username}', '{food}', '{exp_bool}')")
 
-        JSON = {
+        JSON = { #debug
             "Owner" : App.user.username,
             "Name" : food,
             "Expires": exp_bool,
@@ -158,17 +148,17 @@ class Window2(Screen): #Main List Window -- CHANGE NAME LATER
             "Type": None
             }
 
-        print(JSON)
+        print(JSON) #debug
 
-    def got_date(self, the_date):
+    def got_date(self, the_date): #gets date from the calender
         self.bufferDate = the_date
         return(self.bufferDate)
 
-    def show_date_picker(self):
+    def show_date_picker(self): #opens up the calender
         date_dialog = MDDatePicker(callback=self.got_date)
         date_dialog.open()
 
-    def add_pantry_item(self,instance):
+    def add_pantry_item(self,instance):#Opens dialog box and prompts for additional information needed for the add to pantry functionality
         
         self.bufferDate = None #reset bufferdate back to null when dialog box opens
         self.food_name = instance.text #this gets the title of the item clicked
@@ -188,30 +178,30 @@ class Window2(Screen): #Main List Window -- CHANGE NAME LATER
         # open thingy that prompts for more info and then creates a food object which is then sent to the food handler
 
 
-    def close_dialog(self,instance):
+    def close_dialog(self,instance): #closes the dialog box
         self.dialog.dismiss()
 
     def submit_dialog(self,instance):
         #quant = self.dialog.content_cls.ids.quantity.text
         
-        if App.sm.get_screen("window2").bufferDate:
+        if App.sm.get_screen("window2").bufferDate: #if a date was selected assign it to a nicer variable name
             date = App.sm.get_screen("window2").bufferDate
-        else:
+        else: #else let it be empty
             date = None
         
-        if self.dialog.content_cls.ids.quantity.text:
+        if self.dialog.content_cls.ids.quantity.text: #If quantity was chosen assign it to a nicer variable name
             quant = self.dialog.content_cls.ids.quantity.text
-        else:
+        else: #else it defaults to 1
             quant = 1
 
 
 
-        self.JSON_maker(self.food_name,date,quant) #send collected info to be made into JSON type beat
+        self.JSON_maker(self.food_name,date,quant) #send collected info to be sent to the database
         #after submitting, remove the item and close the box
         self.remove_item(self.pantry_item_instance) #removes the item from the list when button is pressed
         self.dialog.dismiss()
 
-    def call_back(self,instance):
+    def call_back(self,instance):#debug
         print(instance.icon)
 
 
@@ -241,10 +231,10 @@ class ItemDrawer(OneLineIconListItem): # icons and names in the nav list
     icon = StringProperty()
     text_color = ListProperty((0, 0, 0, 1)) #colors gets set back to black after click?
 
-    def on_press(self):
+    def on_press(self): #This controls what screen the user goes to when they click on each option in the 
         print(self.icon)
         if self.icon == "pasta":
-            self.parent.parent.parent.parent.parent.current = "recipes" #WE ARE POGGING !!
+            self.parent.parent.parent.parent.parent.current = "recipes"
         elif self.icon == "database":
             self.parent.parent.parent.parent.parent.current = "pantry"
         elif self.icon == "food-apple":
@@ -262,8 +252,6 @@ class DrawerList(ThemableBehavior, MDList):
         instance_item.text_color = self.theme_cls.primary_color
 
 class ContentNavigationDrawer(BoxLayout):
-    def test(self,instance):
-        print("fuck")
     pass
 
 
@@ -272,6 +260,7 @@ class ContentNavigationDrawer(BoxLayout):
 class App(MDApp):
     #initialize user
     user = User("PeterParker","spidyman@gmail.com","password")
+    #initialize database
     db = DBHandler()
     #SCREEN MANAGER AND SCREENS
     sm = ScreenManager()
@@ -286,4 +275,4 @@ class App(MDApp):
         screen = Builder.load_file('test.kv')
         return screen
 
-App().run()
+App().run() #runs the app
