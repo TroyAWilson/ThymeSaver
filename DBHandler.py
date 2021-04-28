@@ -29,5 +29,5 @@ class DBHandler:
     
         
 handler = DBHandler()
-names = handler.exec("INSERT INTO User VALUES('testUser', 'test@test.com', PASSWORD('TEST!'))")
-print(names)
+# names = handler.exec("INSERT INTO User VALUES('testUser', 'test@test.com', PASSWORD('TEST!'))")
+# print(names)
